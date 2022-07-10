@@ -22,7 +22,10 @@ export function RepositoryList() {
     o tempo de resposta n da consulta nao vai interferir no 
     carregamento do componente em si*/
     const [repositories, setRepositories] = useState<Repository[]>([]);
+    const [perfilRepositories, setPerfilRepositories] = useState<string>('');
+    const [userPerfil, setUserPerfil] = useState<string>('');
 
+    let apiLink = 'https://api.github.com/users/'
     /* O useEffect serve para executar uma função sempre que uma de suas dependências
     sofrer algum tipo de alteração.
     As dependências dos useEffect sempre são passadas no segundo parametro dele.
@@ -34,21 +37,48 @@ export function RepositoryList() {
     useEffect(() => {
         /* Faz a requisição, quando recebe a resposta no primeiro then conver para JSON
         no segundo Then seta a variavel repositories com os dados recebidos da API */
-        fetch('https://api.github.com/users/JJtankevans/repos')
+        fetch(perfilRepositories)
             .then(response => response.json())
             .then(data => setRepositories(data))
-    }, []);
+    }, [perfilRepositories]);
 
     //console.log(repositories)
 
-    return(
+    //Essa função fica observando userPerfil que qando ele fica diferente de nulo entao
+    function handleNewPerfil() {
+        if(!userPerfil) return;
+
+        //Junta o user do github com o resto do link para fazer a requisição
+        apiLink += `${userPerfil}/repos`;
+
+        //Seta a o estado de perfilRepositories que dispara o useEffect ali encima
+        setPerfilRepositories(apiLink);
+
+        //Faz o texto do input ficar em branco novamente
+        setUserPerfil('');
+
+    }
+
+    return (
         /* Dentro do ul foi usado o map pq é preciso ter um retorno, no caso um RepositoryItem, 
         e com o foreach nao tem nenhum retorno*/
         <section className="repository-list">
             <h1>Lista de repositórios</h1>
+            <header>
+                <div className="input-group">
+                    <input
+                        type="text"
+                        placeholder="Pesquisa novo perfil"
+                        onChange={(e) => setUserPerfil(e.target.value)}
+                        value={userPerfil}
+                    />
+                    <button type="submit" onClick={handleNewPerfil}>Pesquisar</button>
+                </div>
+            </header>
+
             <ul>
                 {repositories.map(repository => {
-                    return < RepositoryItem key={repository.name} repository ={repository}/>
+                    return < RepositoryItem key={repository.name} repository={repository} />
                 })}
             </ul>
         </section>
